@@ -45,7 +45,7 @@ class Output_Xmpp extends Output
    */
   public function getChatroom()
   {
-    return $this->chatroom.'@conference.jabber.abc-objectif.local';
+    return $this->chatroom;
   }
 
   /**
