@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PMSIpilot flow, aka pflow, a toolkit for your Git workflow</title>
+  <meta name="author" content="PMSIpilot">
+  <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="shortcut icon" href="images/favicon.ico">
+</head>
+<body data-spy="scroll">
+
+  <a href="http://github.com/pmsipilot/pflow" class="contribute"><img src="images/forkme.png" alt="Fork me on GitHub"></a>
+
+  <div id="navbar" class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="brand" href="#">pflow, for Git workflow</a>
+        <ul class="nav">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#installation">Installation</a></li>
+          <li><a href="#configuration">Configuration</a></li>
+          <li><a href="#commands">Commands</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    
+    <div class="hero-unit">
+      <h1>pflow</h1>
+      <p>Your Git workflow, just easier</p>
+      <p>
+        <a class="btn btn-primary btn-large" href="#about" >Learn more &raquo;</a>
+      </p>
+    </div>
+    
+    <section id="about">
+      
+      <div class="page-header">
+        <h1>About</h1>
+      </div>
+    
+      <h2>Intro</h2>
+      
+      <div class="row">
+        <div class="span12">
+          <p>
+            At PMSIpilot, we migrated from SVN to <a href="http://git-scm.com/">Git</a> in late 2010, as the need for a more powerful <acronym title="Version Control System">VCS</acronym> was rising.
+            Now that we had a great <acronym title="Distributed Version Control System">DVCS</acronym> tool in our hands, we needed to work on a branch model to use within our dev teams (about 15 people).
+          </p>
+      
+          <p>
+            We thought (and still think) it would to be easier to abstract this branch model with a powerful <acronym title="Command Line Interface">CLI</acronym> tool to use on a daily basis.
+            Inspired by <a href="https://github.com/nvie/gitflow">git-flow</a>, we developed <strong><em>pflow</em></strong>, a <acronym title="Command Line Interface">CLI</acronym> tool we hope you'll like and use as we have been doing for more than one year :)
+          </p>
+        </div>
+      </div>
+    
+      <h2>Concept</h2>
+      
+      <div class="row">
+        <div class="span12">
+          <p>
+            With the powerful Git merging capabilities, whenever we start to develop something (feature, bug fix...), we do it on a new Git branch to isolate it.
+          </p>
+          <div class="well">In pflow langage, we call it a <strong><em>feature</em></strong>.</div>
+          <p>The goal of pflow is to provide commands to interact with features:
+            <ul>
+              <li>start</li>
+              <li>publish</li>
+              <li>sync</li>
+              <li>finish</li>
+              <li>review request</li>
+              <li>...</li>
+            </ul>
+          </p>
+        </div>
+      </div>
+  
+    </section>
+    
+    <section id="installation">
+      
+      <div class="page-header">
+        <h1>Installation</h1>
+      </div>
+      
+      <div class="row">
+        <div class="span12">
+      
+          <p><a href="http://www.php.net/">PHP</a> >= 5.2 and <a href="http://git-scm.com/">Git</a> >= 1.7 must be installed.</p>
+        
+          <p>
+          Now follow these instructions:
+<pre>
+git clone git://github.com/pmsipilot/pflow.git
+cd pflow
+ln -sf `pwd`/bin/git-pflow ~/bin/git-pflow
+ln -sf `pwd`/bin/pflow ~/bin/pflow
+</pre>
+            <span class="label label-info">Info</span> We suppose here that ~/bin is in your PATH. Just change the previous <code>ln -sf</code> commands to adjust them if it is not the case.
+          </p>
+          
+          <p>
+          You should now have pflow installed:
+<pre>
+pflow --version
+<em>your_pflow_version</em>
+</pre>
+          </p>
+          
+        </div>
+      </div>
+      
+    </section>
+    
+    <section id="configuration">
+      
+      <div class="page-header">
+        <h1>Configuration</h1>
+      </div>
+      
+      <div class="row">
+        <div class="span12">
+      
+          <p>pflow is installed, let's use it in a Git project. The minimal configuration should look like this:
+<pre>
+cd my_project
+pflow init
+-!- Jabber output disabled
+PMSIpilot flow configuration
+-!- PMSIpilot flow can work with Crew
+<strong>handle Crew stuff (yes|no) [no] :</strong> 
+-!- fetch origin
+<strong>team branch name : master</strong>
+-!- branch -a
+-!- branch -a
+-!- PMSIpilot flow can automatically create a database when you start a branch (using the -d option of feature start)
+<strong>handle database stuff (yes|no) [no] : </strong>
+PMSIpilot can announce branch starts and merges on jabber. You will need your jabber username and password.
+<strong>announce stuff on jabber (yes|no) [no] : </strong>
+thank you, pflow is now configured!
+
+</pre>
+          </p>
+          
+          <p>Explanations:
+            <ul>
+              <li>Crew: pflow can be used to request code reviews with <a href="http://pmsipilot.github.com/Crew/">Crew</a>, another tool we developped :)</li>
+              <li>Team branch name: the default base branch for each of your feature starts. Branch must be available on origin remote.</li>
+              <li>Handle database stuff: as well as the code of every feature is isolated in a Git branch, your data could be isolated too. pflow can create a MySQL schema when you start your feature with -d flag.</li>
+              <li>Jabber stuff: pflow can talk to a jabber server to tell when you start/publish/finish a feature.</li>
+            </ul>
+          </p>
+          
+        </div>
+      </div>
+      
+    </section>
+    
+    <section id="commands">
+      
+      <div class="page-header">
+        <h1>Commands</h1>
+      </div>
+      
+      <div class="row">
+        <div class="span12">
+          <p>Detailed description for each pflow command is coming soon :)</p>
+          <p>You can look at the available commands by just running <code>pflow</code> in your console:</p>
+<pre>
+pflow
+  abort                        tries to abort the last interrupted action
+
+  continue                     tries to continue the last interrupted action
+
+  continue reset               resets continue informations
+
+  feature finish               merges a feature branch in the base branch
+    -p                         push the changes after merging
+    -d                         drop database for feature branch
+
+  feature info                 show some informations about the feature
+
+  feature publish              pushes the feature branch on the origin
+
+  feature start <feature_name> start a feature branch off the base branch
+    -b branch                  base branch from feature rather than the default base branch
+    -d                         create database for feature branch
+    -n                         do not update the base branch before branching
+    -p                         automatically push the branch after creation
+
+  feature sync                 synchronizes feature branch with base branch and remote branch
+
+  feature sync base            synchronizes feature branch with its base branch
+
+  feature sync remote          synchronizes feature branch with its remote branch
+
+  init                         initialize PMSIpilot flow
+    -d                         remove all PMSIpilot flow configuration
+    -s section                 section to configure
+
+  log purge                    purges the log in .git/pflow/history
+
+  review request               create a review request on Crew server for current branch
+
+  review status                print review status of the current branch
+
+  state                        shows infos on the current state of your repository
+
+  update                       updates pflow (requires writing privileges to install prefix)
+  
+  global options:
+    --no-hook                  if passed, pre/post command hooks will not be executed
+
+</pre>
+        </div>
+      </div>
+      
+    </section>
+
+    <footer>
+      <p>&copy; <a href="http://github.com/pmsipilot">PMSIpilot</a> 2012</p>
+    </footer>
+  </div>
+
+  <script src="js/jquery.min.js"></script> 
+  <script src="bootstrap/js/bootstrap.js"></script>
+  <script src="js/main.js"></script>
+
+</body>
+</html>
