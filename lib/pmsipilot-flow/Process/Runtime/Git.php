@@ -9,7 +9,7 @@ class Process_Runtime_Git extends Process_Runtime
    */
   public function __construct(OutputInterface $output, array $options = array(), array $processOptions = array())
   {
-    $options['format'] = sprintf('/usr/bin/git --git-dir=%s --work-tree=%s %%s', $options['git_dir'].'/.git', $options['git_dir']);
+    $options['format'] = sprintf('git --git-dir=%s --work-tree=%s %%s', $options['git_dir'].'/.git', $options['git_dir']);
     unset($options['git_dir']);
 
     parent::__construct($output, $options, $processOptions);
