@@ -1,0 +1,307 @@
+#!/usr/bin/env php
+<?php
+
+class Pflow_Autoloader
+{
+  private $rootDir;
+  
+  private $classDirs = array();
+
+  public function __construct($rootDir)
+  {
+    $this->rootDir   = $rootDir;
+    $this->buildClassDirs();
+    $this->classDirs = $this->getClassDirs();
+  }
+  
+  public function getClassDirs()
+  {
+    return $this->classDirs;
+  }
+  
+  protected function buildClassDirs()
+  {
+    // Compute plugins directories
+    $pluginsDir  = $this->rootDir.'/plugins/';
+    $pluginsDirs = glob(sprintf('%s/plugins/*/lib', $this->rootDir), GLOB_ONLYDIR);
+    
+    $this->classDirs = array_merge(array(sprintf('%s/lib/pmsipilot-flow', $this->rootDir)), $pluginsDirs);
+  }
+  
+  public function autoload($className)
+  {
+    $classFile = str_replace('_', '/', $className).'.php';
+    foreach ($this->classDirs as $classDir)
+    {
+      $classFilePath = $classDir.'/'.$classFile;
+      if (is_file($classFilePath))
+      {
+        require_once($classFilePath);
+        break;
+      }
+    }
+  }
+}
+
+
+
+/**
+ * @todo rename OutputInterface#output to OutputInterface#write
+ */
+
+define('DEBUG', isset($_ENV['PFLOW_DEBUG']) ? $_ENV['PFLOW_DEBUG'] : false);
+define('DRY_RUN', false);
+
+define('PFLOW_LIB_ROOT', realpath(dirname(__FILE__).'/../lib/pmsipilot-flow/'));
+
+$autoloader = new Pflow_Autoloader(dirname(__FILE__).'/../');
+
+spl_autoload_register(array($autoloader, 'autoload'));
+
+$helpBuilder = new Pflow_HelpBuilder();
+$helpBuilder->setLibDirs($autoloader->getClassDirs());
+$commandsHelp = $helpBuilder->getHelp();
+
+require_once(PFLOW_LIB_ROOT.'/pflow_getopt.php');
+
+/**
+ * @var OutputInterface
+ */
+$output = new Output_Aggregated();
+$output->addOutput(new Output_Console(array(Output::SCOPE_PRIVATE)));
+$output->addOutput(new Output_StandardStreams());
+$output->addOutput($output_debug = new Output_Debug(DEBUG));
+
+// get an input driver
+try
+{
+  $input = new Input_Readline($output);
+}
+catch (RuntimeException $e)
+{
+  $output->write('-!- Readline not available, fall back to standard input');
+  $input = new Input_Standard($output);
+}
+
+// update detection
+$pflow_git_dir = realpath(dirname(__FILE__).'/../');
+$pflow_git     = new Git($pflow_git_dir, new Process_Runtime_Git($output_debug, array('git_dir' => $pflow_git_dir)), $output_debug, new Pflow_History_Blackhole());
+
+/**
+ * Handle update
+ */
+if (isset($argv[1]) && $argv[1] == 'update')
+{
+  $runtimeCheckRoot = new Process_Runtime($output_debug);
+  $outputCheckRoot = $runtimeCheckRoot->execute("id -u")->getOutput();
+  if (isset($outputCheckRoot[0]) && $outputCheckRoot[0]=='0')
+  {
+    // Launched as root (user with uid=0) => update forbidden
+    $output->write("pflow update should not be run as 'root' nor started using 'sudo'");
+    exit(1);
+  }
+  
+  $pflow_last_commit_before_update = $pflow_git->getLastCommit('HEAD');
+  $pflow_git->reset(Git::RESET_HARD);
+  $pflow_git->updateBranchFromRemote('origin', 'master');
+  $pflow_last_commit_after_update  = $pflow_git->getLastCommit('HEAD');
+  
+  if ($pflow_last_commit_before_update === $pflow_last_commit_after_update)
+  {
+    printf("pflow is already up-to-date :-)\n");
+  }
+  else
+  {
+    printf("pflow has been updated from %s to %s\n", $pflow_last_commit_before_update, $pflow_last_commit_after_update);
+  }
+
+  exit(0);
+}
+else
+{
+  $pflow_git->fetch('origin');
+  $missing_commits = $pflow_git->execute('log master..origin/master --oneline')->getOutput();
+
+  if (count($missing_commits) > 0)
+  {
+    $output->write('Your copy of pflow is not up-to-date!');
+
+    foreach($missing_commits as $commit)
+    {
+      if (false !== strpos($commit, '#critical#'))
+      {
+        $output->write('This is a critical update, you must update your copy of pflow before continuing.');
+        $output->write('Please update pflow, then re-run your command (pflow continue cannot be used there, sorry!)');
+
+        exit(0);
+      }
+    }
+  }
+
+  unset($missing_commits);
+}
+
+// Handle version request
+if (in_array('--version', $argv))
+{
+  $package_infos = json_decode(file_get_contents(dirname(__FILE__).'/../package.json'));
+  printf("%s\n", $package_infos->version);
+  exit(0);
+}
+
+unset($pflow_git);
+
+// try to find the project's git root
+$git_dir = getcwd();
+
+while (!file_exists($git_dir.'/.git'))
+{
+  $git_dir = realpath($git_dir.'/..');
+
+  if (!$git_dir || $git_dir == '/')
+  {
+    $output->write(sprintf('Could not find a git repository in "%s"', getcwd()));
+    exit(1);
+  }
+}
+
+// handle history file
+if (!is_file($history_file = $git_dir.'/.git/pflow/history'))
+{
+  if (!is_dir(dirname($history_file)))
+  {
+    mkdir(dirname($history_file), 0777, true);
+  }
+  
+  touch($history_file);
+}
+
+$runtime = new Process_Runtime_Git($output, array(
+  'skip_output' => '/^config/',
+  'git_dir'     => $git_dir,
+));
+
+// git driver
+$git = new Git($git_dir.'/.git', $runtime, $output, new Pflow_History_File(new SplFileObject($history_file)), array('debug' => DEBUG));
+
+// try to get an xmpp output
+try
+{
+  if ($git->getConfig('pflow.jabber.enabled'))
+  {
+    require_once PFLOW_LIB_ROOT.'/vendor/XMPPHP/XMPP.php';
+    $xmpp = new XMPPHP_XMPP($git->getConfig('pflow.jabber.host'), $git->getConfig('pflow.jabber.port'), $git->getConfig('pflow.jabber.username'), $git->getConfig('pflow.jabber.password'), 'xmpphp', null, false, 4);
+    $xmpp->connect();
+    $xmpp->processUntil('session_start');
+    $output->addOutput(new Output_Xmpp($xmpp, $git->getConfig('pflow.jabber.chatroom'), $git->getConfig('pflow.jabber.nickname')));
+  }
+}
+catch (Exception $e)
+{
+  $output->write('-!- Jabber output disabled');
+}
+
+// check pflow installation status
+try
+{
+  $git->getConfig('pflow.installed');
+}
+catch (InvalidArgumentException $e)
+{
+  if (isset($argv[1]) && $argv[1] !== 'init')
+  {
+    $output->write('-!- Please run git pflow init');
+    exit(1);
+  }
+}
+
+/**
+ * @param OutputInterface $output
+ * @return void
+ */
+function show_usage(OutputInterface $output, $commandsHelp)
+{
+  $output->write(<<<EOF
+Usage: git pflow <command> [options]
+
+All configuration settings are stored in your ".git/config" under the "pflow" namespace.
+
+  --version                    displays information about pflow version and installation dir
+
+$commandsHelp
+  update                       updates pflow (requires writing privileges to install prefix)
+  
+  global options:
+    --no-hook                  if passed, pre/post command hooks will not be executed
+  
+EOF
+  );
+}
+
+// no command ?
+if (!isset($argv[1]))
+{
+  show_usage($output, $commandsHelp);
+  exit(0);
+}
+
+/**
+ * This history is for storing last command only
+ */
+$history = new Pflow_History_Git($git);
+
+$dispatcher = new Pflow_Dispatcher($git, $output, $input, $history);
+try
+{
+  $command    = $dispatcher->dispatch($argv);
+}
+catch(BadMethodCallException $e)
+{
+  $output->write($e->getMessage());
+  exit(1);
+}
+
+if (!$command instanceof Pflow_CommandInterface)
+{
+  exit(1);
+}
+
+// Hard to find a short option name used by none of existing commands
+// And getopt() before PHP 5.3 does not support long option names
+$hookEnabled = !in_array('--no-hook', $argv);
+
+/**
+ * On to the real job!
+ */
+try
+{
+  if ($hookEnabled)
+  {
+    $hooksLauncher = new Pflow_HookLauncher($command, $output);
+    $hooksLauncher->executePre();
+  }
+  $ret = $command->execute($argv);
+  if ($hookEnabled)
+  {
+    $hooksLauncher->executePost();
+  }
+}
+catch (Exception $e)
+{
+  $output->write($e->getMessage());
+  $ret = 1;
+}
+
+/**
+ * Records history
+ */
+if (
+  !$command instanceof Pflow_Command_Continue &&
+  !$command instanceof Pflow_Command_Abort &&
+  !$command instanceof Pflow_Command_State
+  )
+{
+  $history->add(implode(' ', array_slice($argv, 1)));
+}
+
+exit($ret ? 0 : 1);
