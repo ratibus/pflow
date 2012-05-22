@@ -6,6 +6,7 @@
   <meta name="author" content="PMSIpilot">
   <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/prettify.css">
   <link rel="shortcut icon" href="images/favicon.ico">
 </head>
 <body data-spy="scroll">
@@ -95,7 +96,7 @@
         
           <p>
           Now follow these instructions:
-<pre>
+<pre class="prettyprint lang-bsh linenums">
 git clone git://github.com/pmsipilot/pflow.git
 cd pflow
 ln -sf `pwd`/bin/git-pflow ~/bin/git-pflow
@@ -106,7 +107,7 @@ ln -sf `pwd`/bin/pflow ~/bin/pflow
           
           <p>
           You should now have pflow installed:
-<pre>
+<pre class="prettyprint lang-bsh linenums">
 pflow --version
 <em>your_pflow_version</em>
 </pre>
@@ -127,7 +128,7 @@ pflow --version
         <div class="span12">
       
           <p>pflow is installed, let's use it in a Git project. The minimal configuration should look like this:
-<pre>
+<pre class="prettyprint lang-bsh linenums">
 cd my_project
 pflow init
 -!- Jabber output disabled
@@ -171,7 +172,7 @@ thank you, pflow is now configured!
         <div class="span12">
           <p>Detailed description for each pflow command is coming soon :)</p>
           <p>You can look at the available commands by just running <code>pflow</code> in your console:</p>
-<pre>
+<pre class="prettyprint lang-bsh linenums">
 pflow
   abort                        tries to abort the last interrupted action
 
@@ -187,7 +188,7 @@ pflow
 
   feature publish              pushes the feature branch on the origin
 
-  feature start <feature_name> start a feature branch off the base branch
+  feature start &lt;feature_name&gt; start a feature branch off the base branch
     -b branch                  base branch from feature rather than the default base branch
     -d                         create database for feature branch
     -n                         do not update the base branch before branching
@@ -227,7 +228,9 @@ pflow
     </footer>
   </div>
 
-  <script src="js/jquery.min.js"></script> 
+  <script src="js/jquery.min.js"></script>
+  <script src="js/prettify.js"></script>
+  <script>$(function () { prettyPrint() })</script>
   <script src="bootstrap/js/bootstrap.js"></script>
   <script src="js/main.js"></script>
 
