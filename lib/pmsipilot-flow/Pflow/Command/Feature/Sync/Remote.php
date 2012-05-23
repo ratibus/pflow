@@ -17,12 +17,11 @@ class Pflow_Command_Feature_Sync_Remote extends Pflow_Command_Feature
       if (!$this->git->pull())
       {
         $this->output('Pull failed. Resolve the conflicts, then run "pflow continue"');
+        return 0;
       }
-
-      return 1;
     }
 
-    return 0;
+    return 1;
   }
   
   /**

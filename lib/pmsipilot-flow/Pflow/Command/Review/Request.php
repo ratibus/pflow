@@ -29,7 +29,7 @@ class Pflow_Command_Review_Request extends Pflow_Command
     {
       $this->output(sprintf('Unable to find base branch configuration for branch %s.', $branch));
   
-      return 1;
+      return 0;
     }
     
     $lastCommit = $this->git->getLastCommit($branch);
@@ -39,7 +39,7 @@ class Pflow_Command_Review_Request extends Pflow_Command
     
     $this->output($message);
     
-    return 0;
+    return 1;
   }
   
   /**

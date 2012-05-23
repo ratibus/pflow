@@ -29,7 +29,7 @@ class Pflow_Command_Review_Status extends Pflow_Command
       $this->output(sprintf('%s : %s', $field, $value));
     }
     
-    return 0;
+    return 1;
   }
   
   /**

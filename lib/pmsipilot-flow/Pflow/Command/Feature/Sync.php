@@ -21,9 +21,10 @@ class Pflow_Command_Feature_Sync extends Pflow_Command_Feature
       $this->git->setConfig('pflow.continue', $continue[1]);
     }
     
-    if (0 == $stepRunner->run(isset($continue) ? $continue[0] : null) ? 0 : 1)
+    if ($stepRunner->run(isset($continue) ? $continue[0] : null))
     {
       $this->output('Feature branch synchronized');
+      return 1;
     }
 
     return 0;

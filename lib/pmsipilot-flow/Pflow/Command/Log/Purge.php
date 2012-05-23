@@ -8,7 +8,7 @@ class Pflow_Command_Log_Purge extends Pflow_Command
    */
   public function execute($argv)
   {
-    return $this->git->getHistory()->purge();
+    return $this->git->getHistory()->purge() ? 1 : 0;
   }
   
   /**

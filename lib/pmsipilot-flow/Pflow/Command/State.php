@@ -39,6 +39,8 @@ class Pflow_Command_State extends Pflow_Command
     {
       $this->output('Finish-feature:  not set');
     }
+    
+    return 1;
   }
   
   /**

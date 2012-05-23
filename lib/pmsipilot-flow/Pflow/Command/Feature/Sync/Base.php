@@ -26,7 +26,7 @@ class Pflow_Command_Feature_Sync_Base extends Pflow_Command_Feature
     {
       $this->output(sprintf('Unable to find base branch configuration for feature branch %s.', $featureBranch));
   
-      return 1;
+      return 0;
     }
 
     $steps = array(
@@ -36,13 +36,13 @@ class Pflow_Command_Feature_Sync_Base extends Pflow_Command_Feature
 
     $runner = $this->getStepsRunner($steps);
 
-    if (0 == $runner->run($this->isContinued() ? $this->getConfig('pflow.continue') : null) ? 0 : 1)
+    if ($runner->run($this->isContinued() ? $this->getConfig('pflow.continue') : null))
     {
       $this->git->removeConfig('pflow.merge-feature');
-      return 0;
+      return 1;
     }
 
-    return 1;
+    return 0;
   }
 
   /**

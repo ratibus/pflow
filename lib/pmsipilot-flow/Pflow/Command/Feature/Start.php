@@ -32,7 +32,7 @@ class Pflow_Command_Feature_Start extends Pflow_Command_Feature
     {
       $this->output('Could not checkout to base branch. Commit or stash changes, then run "pflow continue"');
 
-      return 1;
+      return 0;
     }
 
     // run the steps!
@@ -49,10 +49,10 @@ class Pflow_Command_Feature_Start extends Pflow_Command_Feature
     if ($runner->run($this->isContinued() ? $this->getConfig('pflow.continue') : null))
     {
       $this->outputSuccessfulStart($argv, $baseBranch);
-      return 0;
+      return 1;
     }
 
-    return 1;
+    return 0;
   }
   
   /**

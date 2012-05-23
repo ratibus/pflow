@@ -19,10 +19,10 @@ class Pflow_Command_Feature_Info extends Pflow_Command_Feature
     {
       $this->output(sprintf('Unable to find base branch configuration for feature branch %s.', $currentBranch));
       
-      return 1;
+      return 0;
     }
     
-    return 0;
+    return 1;
   }
   
   /**

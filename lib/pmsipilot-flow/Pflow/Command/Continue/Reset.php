@@ -11,7 +11,7 @@ class Pflow_Command_Continue_Reset extends Pflow_Command_Continue
     $this->git->removeConfig('pflow.continue');
     $this->git->removeConfig('pflow.finish-feature');
 
-    return 0;
+    return 1;
   }
   
   /**

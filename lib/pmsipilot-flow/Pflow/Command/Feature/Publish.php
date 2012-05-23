@@ -17,7 +17,7 @@ class Pflow_Command_Feature_Publish extends Pflow_Command_Feature
 
     $this->output(sprintf('Published feature %s', $currentBranch), Output::SCOPE_PUBLIC);
 
-    return 0;
+    return 1;
   }
   
   /**

@@ -20,7 +20,7 @@ class Pflow_Command_Feature_Finish extends Pflow_Command_Feature
       {
         $this->output(sprintf('Could not checkout to feature branch %s.', $featureBranch));
 
-        return 1;
+        return 0;
       }
     }
     else
@@ -37,7 +37,7 @@ class Pflow_Command_Feature_Finish extends Pflow_Command_Feature
     {
       $this->output(sprintf('Unable to find base branch configuration for feature branch %s.', $featureBranch));
   
-      return 1;
+      return 0;
     }
 
     $steps = array(
@@ -49,14 +49,14 @@ class Pflow_Command_Feature_Finish extends Pflow_Command_Feature
 
     $runner = $this->getStepsRunner($steps);
 
-    if (0 == $runner->run($this->isContinued() ? $this->getConfig('pflow.continue') : null) ? 0 : 1)
+    if ($runner->run($this->isContinued() ? $this->getConfig('pflow.continue') : null))
     {
       $this->git->removeConfig('pflow.finish-feature');
       $this->output(sprintf('Finished working on feature %s (merged in %s)', $featureBranch, $baseBranch), Output::SCOPE_PUBLIC);
-      return 0;
+      return 1;
     }
 
-    return 1;
+    return 0;
   }
 
   /**
