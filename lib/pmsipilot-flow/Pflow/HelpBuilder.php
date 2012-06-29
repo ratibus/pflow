@@ -93,7 +93,7 @@ class Pflow_HelpBuilder
   /**
    * @return array
    */
-  protected function getCommandClasses()
+  public function getCommandClasses()
   {
     $classes = array();
     

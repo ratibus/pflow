@@ -54,7 +54,9 @@ define('DRY_RUN', false);
 
 define('PFLOW_LIB_ROOT', realpath(dirname(__FILE__).'/../lib/pmsipilot-flow/'));
 
-$autoloader = new Pflow_Autoloader(dirname(__FILE__).'/../');
+define('PFLOW_ROOT_DIR', dirname(__FILE__).'/../');
+
+$autoloader = new Pflow_Autoloader(PFLOW_ROOT_DIR);
 
 spl_autoload_register(array($autoloader, 'autoload'));
 
