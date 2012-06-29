@@ -9,8 +9,8 @@ class Pflow_Command_Feature_Sync extends Pflow_Command_Feature
   public function execute($argv)
   {
     $steps = array(
-      'syncRemote' => null,
-      'syncBase'   => null,
+      'syncRemote' => array(),
+      'syncBase'   => array(),
     );
 
     $stepRunner = $this->getStepsRunner($steps);
