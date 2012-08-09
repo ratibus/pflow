@@ -8,8 +8,7 @@ class Pflow_Command_Autocomplete extends Pflow_Command
    */
   public function execute($argv)
   {
-    
-    $rawCommandToAutocomplete = $argv[2];
+    $rawCommandToAutocomplete = isset($argv[2]) ? $argv[2] : '';
     
     // If the command ends with a space, it means the previous completion was successful
     // Otherwise the command has a completion in progress
