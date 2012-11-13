@@ -1,67 +1,17 @@
 #!/usr/bin/env php
 <?php
-
-class Pflow_Autoloader
-{
-  private $rootDir;
-  
-  private $classDirs = array();
-
-  public function __construct($rootDir)
-  {
-    $this->rootDir   = $rootDir;
-    $this->buildClassDirs();
-    $this->classDirs = $this->getClassDirs();
-  }
-  
-  public function getClassDirs()
-  {
-    return $this->classDirs;
-  }
-  
-  protected function buildClassDirs()
-  {
-    // Compute plugins directories
-    $pluginsDir  = $this->rootDir.'/plugins/';
-    $pluginsDirs = glob(sprintf('%s/plugins/*/lib', $this->rootDir), GLOB_ONLYDIR);
-    
-    $this->classDirs = array_merge(array(sprintf('%s/lib/pmsipilot-flow', $this->rootDir)), $pluginsDirs);
-  }
-  
-  public function autoload($className)
-  {
-    $classFile = str_replace('_', '/', $className).'.php';
-    foreach ($this->classDirs as $classDir)
-    {
-      $classFilePath = $classDir.'/'.$classFile;
-      if (is_file($classFilePath))
-      {
-        require_once($classFilePath);
-        break;
-      }
-    }
-  }
-}
-
-
-
-/**
- * @todo rename OutputInterface#output to OutputInterface#write
- */
+require_once dirname(__FILE__) . '/../vendor/autoload.php';
 
 define('DEBUG', isset($_ENV['PFLOW_DEBUG']) ? $_ENV['PFLOW_DEBUG'] : false);
 define('DRY_RUN', false);
-
-define('PFLOW_LIB_ROOT', realpath(dirname(__FILE__).'/../lib/pmsipilot-flow/'));
-
-define('PFLOW_ROOT_DIR', dirname(__FILE__).'/../');
-
-$autoloader = new Pflow_Autoloader(PFLOW_ROOT_DIR);
-
-spl_autoload_register(array($autoloader, 'autoload'));
+define('PFLOW_ROOT_DIR', realpath(dirname(__FILE__) . '/..'));
+define('PFLOW_LIB_ROOT', PFLOW_ROOT_DIR . '/lib/pmsipilot-flow/');
 
 $helpBuilder = new Pflow_HelpBuilder();
-$helpBuilder->setLibDirs($autoloader->getClassDirs());
+$helpBuilder->setLibDirs(array_merge(
+    array(PFLOW_LIB_ROOT),
+    glob(PFLOW_ROOT_DIR . 'plugins/*/lib', GLOB_ONLYDIR)
+));
 $commandsHelp = $helpBuilder->getHelp();
 
 require_once(PFLOW_LIB_ROOT.'/pflow_getopt.php');
@@ -146,7 +96,7 @@ else
 // Handle version request
 if (in_array('--version', $argv))
 {
-  $package_infos = json_decode(file_get_contents(dirname(__FILE__).'/../package.json'));
+  $package_infos = json_decode(file_get_contents(dirname(__FILE__).'/../composer.json'));
   printf("%s\n", $package_infos->version);
   exit(0);
 }
