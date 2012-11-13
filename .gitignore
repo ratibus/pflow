@@ -2,3 +2,6 @@
 .vimrc
 *~
 *.swp
+vendor
+bin/composer
+bin/jsonlint

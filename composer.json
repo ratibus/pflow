@@ -1,0 +1,44 @@
+{
+  "name": "pmsipilot/pflow",
+  "description": "Toolkit for Git workflows, inspired by git-flow",
+  "version": "0.8.0",
+  "type": "library",
+  "homepage": "https://github.com/pmsipilot/pflow",
+  "time": "2012-05-22",
+  "license": "MIT",
+  "keywords": [
+    "git"
+  ],
+  "authors": [
+    {
+      "name": "Eric Lemoine",
+      "email": "eric.lemoine@pmsipilot.com",
+      "homepage": "http://www.pmsipilot.com/",
+      "role": "Maintainer"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/pmsipilot/pflow/issues",
+    "wiki": "https://github.com/pmsipilot/pflow/wiki",
+    "source": "git://github.com/pmsipilot/pflow.git"
+  },
+  "require": {
+    "php": ">=5.2"
+  },
+  "require-dev": {
+    "composer/composer": "dev-master"
+  },
+  "autoload": {
+    "psr-0": {
+      "": "lib/composer"
+    },
+    "classmap": ["lib/", "plugins/"]
+  },
+  "config": {
+    "bin-dir": "bin"
+  },
+  "scripts": {
+      "post-install-cmd": "\\PflowScript::postInstall",
+      "post-update-cmd": "\\PflowScript::postUpdate"
+  }
+}
