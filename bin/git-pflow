@@ -43,12 +43,6 @@ class Pflow_Autoloader
   }
 }
 
-
-
-/**
- * @todo rename OutputInterface#output to OutputInterface#write
- */
-
 define('DEBUG', isset($_ENV['PFLOW_DEBUG']) ? $_ENV['PFLOW_DEBUG'] : false);
 define('DRY_RUN', false);
 
@@ -60,7 +54,9 @@ $autoloader = new Pflow_Autoloader(PFLOW_ROOT_DIR);
 
 spl_autoload_register(array($autoloader, 'autoload'));
 
-$helpBuilder = new Pflow_HelpBuilder();
+$package_infos = json_decode(file_get_contents(dirname(__FILE__).'/../package.json'));
+
+$helpBuilder = new Pflow_HelpBuilder($package_infos);
 $helpBuilder->setLibDirs($autoloader->getClassDirs());
 $commandsHelp = $helpBuilder->getHelp();
 
@@ -146,7 +142,6 @@ else
 // Handle version request
 if (in_array('--version', $argv))
 {
-  $package_infos = json_decode(file_get_contents(dirname(__FILE__).'/../package.json'));
   printf("%s\n", $package_infos->version);
   exit(0);
 }
@@ -217,33 +212,10 @@ catch (InvalidArgumentException $e)
   }
 }
 
-/**
- * @param OutputInterface $output
- * @return void
- */
-function show_usage(OutputInterface $output, $commandsHelp)
-{
-  $output->write(<<<EOF
-Usage: git pflow <command> [options]
-
-All configuration settings are stored in your ".git/config" under the "pflow" namespace.
-
-  --version                    displays information about pflow version and installation dir
-
-$commandsHelp
-  update                       updates pflow (requires writing privileges to install prefix)
-  
-  global options:
-    --no-hook                  if passed, pre/post command hooks will not be executed
-  
-EOF
-  );
-}
-
 // no command ?
 if (!isset($argv[1]))
 {
-  show_usage($output, $commandsHelp);
+  $output->write($commandsHelp);
   exit(0);
 }
 
